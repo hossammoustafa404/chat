@@ -3,8 +3,10 @@ import { AnyKeys, Model, ObjectId } from 'mongoose';
 export class BaseRepository<T> {
   constructor(private readonly model: Model<T>) {}
 
-  public createOne(data: Partial<T>) {
-    return this.model.create(data);
+  public async createOne(data: Partial<T>) {
+    const result = await this.model.create(data);
+    console.log(result);
+    return result.toObject();
   }
 
   public findOneById(id: ObjectId) {
