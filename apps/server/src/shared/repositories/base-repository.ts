@@ -1,27 +1,40 @@
-import { AnyKeys, Model, ObjectId } from 'mongoose';
+import { Model, ObjectId } from 'mongoose';
 
-export class BaseRepository<T> {
-  constructor(private readonly model: Model<T>) {}
+export class BaseRepository<SchemaClass, DomainEntity> {
+  constructor(
+    private readonly model: Model<SchemaClass>,
+    private readonly mapper: any,
+  ) {}
 
-  public async createOne(data: Partial<T>) {
-    const result = await this.model.create(data);
-    console.log(result);
-    return result.toObject();
+  public async createOne(data: Partial<DomainEntity>): Promise<DomainEntity> {
+    const record = await this.model.create(this.mapper.toPersistence(data));
+    return this.mapper.toDomain(record);
   }
 
-  public findOneById(id: ObjectId) {
-    return this.model.findById(id);
+  public async findOneById(id: string): Promise<DomainEntity | null> {
+    const record = await this.model.findById(id).select('-firstName -lastName');
+    return record ? this.mapper.toDomain(record) : null;
   }
 
-  public findMany() {
-    return this.model.find();
+  public async findMany(): Promise<DomainEntity[]> {
+    const records = await this.model.find();
+    return records.map((record) => this.mapper.toDomain(record));
   }
 
-  public updateOneById(id: ObjectId, data: Partial<T>) {
-    return this.model.findByIdAndUpdate(id, data, { new: true });
+  public async updateOneById(
+    id: string,
+    data: Partial<DomainEntity>,
+  ): Promise<DomainEntity | null> {
+    const record = await this.model.findByIdAndUpdate(
+      id,
+      this.mapper.toPersistence(data),
+      { new: true },
+    );
+    return record ? this.mapper.toDomain(record) : null;
   }
 
-  public deleteOneById(id: ObjectId) {
-    return this.model.findOneAndDelete({ id });
+  public async deleteOneById(id: string): Promise<DomainEntity | null> {
+    const record = await this.model.findOneAndDelete({ id });
+    return record ? this.mapper.toDomain(record) : null;
   }
 }

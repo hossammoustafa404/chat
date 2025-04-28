@@ -1,6 +1,6 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { RegisterDto } from './dtos';
+import { LoginDto, RegisterDto } from './dtos';
 import {
   ApiConflictResponse,
   ApiCreatedResponse,
@@ -23,5 +23,10 @@ export class AuthController {
   @Post('register')
   public register(@Body() registerDto: RegisterDto) {
     return this.authService.register(registerDto);
+  }
+
+  @Post('login')
+  public login(@Body() loginDto: LoginDto) {
+    return this.authService.login(loginDto);
   }
 }
